@@ -1,66 +1,57 @@
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
-import { StyleSheet, Button, Text, View, TextInput } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
+import HomeScreen from './screens/HomeScreen';
+import SettingsScreen from './screens/SettingsScreen';
+
+import { ThemeProvider } from './context-store/context';
+
+// Initialize the store
+
+const Tab = createBottomTabNavigator();
 
 // Root Component
 
 export default function App() {
-  const [enteredTodoText, setEnteredTodoText] = useState('');
-
-  const [todoList, setTodoList] = useState([]);
-
-  function todoInputHandler(enteredText) {
-    setEnteredTodoText(enteredText);
-  }
-
-  function addTodoHandler() {
-    setTodoList((currentTodoList) => [...currentTodoList, enteredTodoText]);
-  }
+  // Returns input and list for todo's
+  // Using FlatList for optimised loading of items instead of using ScrollView
 
   return (
-    <View style={styles.appContainer}>
-      <StatusBar style='auto' />
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.textInput}
-          placeholder='Type your next todo here...'
-          onChangeText={todoInputHandler}
-        />
-        <Button title='+ Add' onPress={addTodoHandler} />
-      </View>
-      <View style={styles.todoContainer}>
-        {todoList.map((todo) => (
-          <Text>{todo}</Text>
-        ))}
-      </View>
-    </View>
+    <ThemeProvider>
+      <>
+        <StatusBar style='auto' />
+        <NavigationContainer>
+          <Tab.Navigator
+            screenOptions={({ route }) => ({
+              tabBarIcon: ({ focused, color, size }) => {
+                let iconName;
+
+                if (route.name === 'Todo List') {
+                  iconName = focused
+                    ? 'ios-information-circle'
+                    : 'ios-information-circle-outline';
+                } else if (route.name === 'Theme') {
+                  iconName = focused ? 'ios-list' : 'ios-list';
+                }
+
+                // You can return any component that you like here!
+                return <Ionicons name={iconName} size={size} color={color} />;
+              },
+              tabBarActiveTintColor: '#311b6b',
+              tabBarInactiveTintColor: 'gray',
+            })}
+          >
+            <Tab.Screen
+              name='Todo List'
+              component={HomeScreen}
+              // options={{ tabBarBadge: todoList.length }}
+            />
+            <Tab.Screen name='Theme' component={SettingsScreen} />
+          </Tab.Navigator>
+        </NavigationContainer>
+      </>
+    </ThemeProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  appContainer: {
-    flex: 1,
-    paddingTop: 50,
-    paddingHorizontal: 16,
-  },
-  inputContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 24,
-    borderBottomColor: '#cccccc',
-    borderBottomWidth: 1,
-  },
-  textInput: {
-    borderWidth: 1,
-    borderColor: '#cccccc',
-    width: '80%',
-    marginRight: 8,
-    padding: 8,
-  },
-  todoContainer: {
-    flex: 5,
-    marginTop: 24,
-  },
-});
